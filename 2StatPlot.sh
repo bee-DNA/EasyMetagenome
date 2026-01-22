@@ -3,7 +3,7 @@
 # 2EasyMetagenome Visualization (2易宏基因组统计与可视化)
 
     # Authors(作者): Yong-Xin Liu(刘永鑫), Defeng Bai(白德凤), Tong Chen(陈同) et al.
-    # Version(版本): 1.25, 2026/1/1
+    # Version(版本): 1.25, 2026/1/22
     # Operation System(操作系统): Linux Ubuntu 22.04+ / CentOS 7.7+ 
     # Homepage(主页): https://github.com/YongxinLiu/EasyMetagenome
     # Cititon(引文): Bai, et al. 2025. EasyMetagenome: A User‐Friendly and Flexible Pipeline for Shotgun Metagenomic Analysis in Microbiome Research. iMeta 4: e70001. https://doi.org/10.1002/imt2.70001
@@ -19,7 +19,7 @@
 ### Alpha diversity (α多样性)
 
     # index calculation (多样性指数计算)
-    sed -i /^#/d metaphlan4/taxonomy.tsv
+    sed -i '/^#/d' metaphlan4/taxonomy.tsv
     Rscript ${sd}/metaphlan4_alpha.R -h
     Rscript $sd/metaphlan4_alpha.R \
       -i metaphlan4/taxonomy.tsv \
@@ -28,7 +28,7 @@
       -o metaphlan4/alpha
 
     # Plot alpha diversity boxplot (绘制多样性指数箱线图)
-    # result: input+richness/shannon/shannon/invsimpson/Pielou_evenness, sig using different letter a/b/c
+    # result: metaphlan4/boxplot_{richness/shannon/shannon/invsimpson/Pielou_evenness}.pdf, sig using different letter a/b/c
     Rscript $sd/alpha_boxplot.R -h
     head -n1 metaphlan4/alpha.txt
     Rscript $sd/alpha_boxplot.R \
@@ -47,6 +47,7 @@
     done
 
     # Alpha diversity boxplot with pvalue
+    # result: p_boxplot_${alpha_diversity}.pdf
     Rscript $sd/alpha_boxplot_new.R \
       -i metaphlan4/alpha.txt \
       -a shannon \
@@ -68,37 +69,36 @@
        else {for(i=2;i<=NF;i++) if($i>0.5) print $1, a[i];}}' \
        metaphlan4/taxonomy.tsv > metaphlan4/taxonomy_high.tsv
     wc -l metaphlan4/taxonomy_high.tsv
-    # http://www.ehbio.com/test/venn/#/ Online drawing, supports real-time viewing of element intersections 在线绘制，支持实时查看元素交集
-    # 引文：Mei Yang, Tong Chen, Yong-Xin Liu, Luqi Huang. 2024. Visualizing set relationships: 
-    # EVenn's comprehensive approach to Venn diagrams. iMeta 3: e184. https://doi.org/10.1002/imt2.184
-    # 本地5组比较:-f输入文件,-a/b/c/d/g分组名,-w/u为宽高英寸,-p输出文件名后缀
+    # EVenn (https://www.bic.ac.cn/test/venn/#/) supports 6 groups and real-time viewing of element intersections (支持实时查看元素交集)
+    # Ref：Yang, Tong Chen, Yong-Xin Liu, Luqi Huang. 2024. Visualizing set relationships: EVenn's comprehensive approach to Venn diagrams. iMeta 3: e184. https://doi.org/10.1002/imt2.184
+    # script support 2-5 group: -f input, -a/b/c/d/g group, -w/u width and length, -p output filename
+    # 本地2-5组比较:-f输入文件,-a/b/c/d/g分组名,-w/u为宽高英寸,-p输出文件名后缀
     bash ${sd}/sp_vennDiagram.sh -f metaphlan4/taxonomy_high.tsv \
       -a C1 -b C2 -c Y1 -d Y2 -g Y3 \
       -w 4 -u 4 \
       -p C1_C2_Y1_Y2_Y3
 
     # Group mean (求均值再两组比较)
-    sed -i '/^#/d' metaphlan4/taxonomy.tsv
     Rscript ${sd}/otu_mean.R --input metaphlan4/taxonomy.tsv \
       --metadata metadata.txt \
       --group Group --thre 0 \
       --scale F --all TRUE --type mean \
       --output metaphlan4/group_mean.txt    
-    # Filter abundance > 0.5 in each group 筛选每个组>0.5%的分类单元，包括界门纲目科属种
+    # Filter abundance > 0.5 in each group (筛选每个组>0.5%的分类单元，包括界门纲目科属种)
     awk 'BEGIN{OFS=FS="\t"}{if(FNR==1) {for(i=2;i<=NF;i++) a[i]=$i;} \
        else {for(i=2;i<=NF;i++) if($i>0.5) print $1, a[i];}}' \
        metaphlan4/group_mean.txt > metaphlan4/group_high.tsv
     bash ${sd}/sp_vennDiagram.sh -f metaphlan4/group_high.tsv \
       -a Centenarians -b Young -c All \
-      -w 8 -u 4.5 \
+      -w 8 -u 6 \
       -p Centenarians_Young_All      
 
-## Beta diversity (β多样性)
+### Beta diversity (β多样性)
   
-    # Distance calculation(距离计算)
-    # 可选计算分类级别-t：1-界；2-门；3-纲；4-目；5-科；6-属；7-种
-    # 可选距离-m："bray", "euclidean", "jaccard", "manhattan"等
-    # 这里以物种水平和bray-curtis距离举例
+    # Distance calculation (距离计算)
+    # -t taxonomy level: 1 kingdom; 2 phylum; 3 order; 4 class; 5 family; 6 genus; 7 species
+    # -m distance type："bray", "euclidean", "jaccard", "manhattan" etc.
+    # e.g. Using 7 species and bray-curtis distance
     Rscript ${sd}/metaphlan4_beta.R -h
     Rscript $sd/metaphlan4_beta.R \
       -i metaphlan4/taxonomy.tsv \
@@ -107,7 +107,7 @@
       -m bray \
       -o metaphlan4/beta
 
-    ### Beta多样性PCoA分析  
+    # Beta diversity in PCoA 
     # PCoA分析输入文件，选择分组，输出文件，图片尺寸mm，统计见beta_pcoa_stat.txt
     # 可选距离有 bray_curtis, euclidean, jaccard, manhattan
     # 此处可能报错“duplicated row.names”,需要给beta.txt增加行名后运行
