@@ -98,7 +98,7 @@
     # Distance calculation (距离计算)
     # -t taxonomy level: 1 kingdom; 2 phylum; 3 order; 4 class; 5 family; 6 genus; 7 species
     # -m distance type："bray", "euclidean", "jaccard", "manhattan" etc.
-    # e.g. Using 7 species and bray-curtis distance
+    # e.g. Claculate level 7 (species) in bray-curtis distance
     Rscript ${sd}/metaphlan4_beta.R -h
     Rscript $sd/metaphlan4_beta.R \
       -i metaphlan4/taxonomy.tsv \
@@ -107,10 +107,8 @@
       -m bray \
       -o metaphlan4/beta
 
-    # Beta diversity in PCoA 
-    # PCoA分析输入文件，选择分组，输出文件，图片尺寸mm，统计见beta_pcoa_stat.txt
-    # 可选距离有 bray_curtis, euclidean, jaccard, manhattan
-    # 此处可能报错“duplicated row.names”,需要给beta.txt增加行名后运行
+    # Beta diversity in Principal Coordinates Analysis (PCoA) 
+    # input distance matrix, group name, width/height in mm, stat in beta_pcoa_stat.txt
     Rscript $sd/beta_pcoa.R \
       --input metaphlan4/beta_bray.txt \
       --design metadata.txt \
@@ -122,18 +120,17 @@
 ### Taxonomic composition (物种组成)
 
     # Heatmap (热图)
-    # Show help (显示脚本帮助)
+    # -h: Show help (显示脚本帮助)
     Rscript ${sd}/metaphlan_hclust_heatmap.R -h
-    # 按指定分类汇总、排序并取Top25种绘制热图
-    # -i输入metaphlan4结果转换的spf文件；
-    # -t指定分类级别，可选Kingdom/Phylum/Class/Order/Family/Genus/Species/Strain(界门纲目科属种株)，推荐门，目，属
-    # -n 输出物种数量，默认为25，最大值为该类型的数量
-    # -w、-e指定图片的宽和高，单位为毫米(mm)
-    # -o输出图pdf、表txt前缀，默认Heatmap+(-t)+(-n)
-    # Order Top 20, Family Top 25, Genus Top 30
+    # stat  (显示脚本帮助)
     csvtk -t stat metaphlan4/taxonomy.spf
+    # Taxonomy level: Order, Top n taxa to plot heatmap (指定分类级、取前n种绘制热图）
+    # Order Top 20, Family Top 25, Genus Top 30
     tax=Order
-    n=20
+    n=25
+    # -i: input metaphlan4 result in spf format
+    # -t: taxa in Kingdom/Phylum/Class/Order/Family/Genus/Species/Strain (界门纲目科属种株)，推荐门，目，属
+    # -o: output figure in pdf, data in txt, default name Heatmap+($tax).pdf/txt
     Rscript $sd/metaphlan_hclust_heatmap.R \
       -i metaphlan4/taxonomy.spf \
       -t ${tax} -n ${n} \
@@ -145,10 +142,10 @@
     Rscript $sd/metaphlan_boxplot.R \
           -i metaphlan4/taxonomy.spf \
           -t ${tax} \
-          -n 30 \
+          -n ${n} \
           -o metaphlan4/boxplot_${tax};done
       
-    # 组间比较箱线图 *_compare.pdf
+    # Compare group boxplot *_compare.pdf (组间比较箱线图)
     for tax in Phylum Family Genus Species; do
     Rscript $sd/metaphlan4_boxplot_compare.R \
           -i metaphlan4/taxonomy.spf \
@@ -165,7 +162,7 @@
           --group Group --output metaphlan4/${tax}.stackplot \
           --legend 10 --width 120 --height 70; done
 
-    # 排序分面堆叠柱状图
+    # Sorted stackplot (排序分面堆叠柱状图)
     for tax in Phylum Genus Species; do
     Rscript ${sd}/tax_stackplot_order.R \
           --input metaphlan4/${tax}.txt --design metadata.txt \
@@ -174,8 +171,11 @@
 
 ### Different compare (差异比较)
 
-    ## STAMP组间比较图
+    ## STAMP
+    # If you encounter errors or no results, lower the threshold and p-value. 
+    # The example sample size is small cause no significant, change it to P<0.1.
     # 如果遇见报错无结果调低threshold和pvalue值，此处样本少无显著改为P<0.1
+    # Set compared groups, using '-' as seperate
     compare="Centenarians-Young"
     Rscript ${sd}/compare_stamp.R \
           --input metaphlan4/Genus.txt --metadata metadata.txt \
