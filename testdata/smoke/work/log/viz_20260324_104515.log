@@ -1,0 +1,58 @@
+==========================================
+可視化分析 (easymetagenome)
+Log 檔案: /workspace/log/viz_20260324_104515.log
+==========================================
+[10:45:15] 工作目錄: /workspace/work
+[10:45:15] 結果目錄: /workspace/result
+[10:45:15] USE_CONDA=0 或 conda 缺失，使用當前 Python
+
+==========================================
+[10:45:15] 檢查必要檔案
+==========================================
+[10:45:15] ✓ taxonomy.tsv 已找到
+[10:45:15] 檢查 Python 套件...
+[10:45:16] ✓ Python 套件已就緒
+
+==========================================
+[10:45:16] 檢查 metadata.txt
+==========================================
+[10:45:16] ✓ metadata.txt 已存在
+[10:45:16] 內容:
+#SampleID`tGroup
+TEST01`tControl
+TEST02`tTreatment
+
+==========================================
+[10:45:16] 執行可視化分析
+==========================================
+  讀取 taxonomy.tsv...
+  ✓ 樣本數: 0  ()
+Traceback (most recent call last):
+  File "<stdin>", line 30, in <module>
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 921, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 983, in pandas._libs.parsers.TextReader._convert_column_data
+pandas.errors.ParserError: Too many columns specified: expected 2 and found 1
+[10:45:18] ❌ Python 可視化腳本失敗（exit code: 1），查看 log: /workspace/log/viz_20260324_104515.log
+
+==========================================
+[10:45:18] ✅ 可視化分析完成！
+==========================================
+[10:45:18] 產生 PDF 檔案: 5 個
+[10:45:18]   📊 boxplot_richness.pdf
+[10:45:18]   📊 boxplot_shannon.pdf
+[10:45:18]   📊 boxplot_simpson.pdf
+[10:45:18]   📊 heatmap_Species.pdf
+[10:45:18]   📊 stacked_Species.pdf
+[10:45:18] 
+[10:45:18] 【完整 Log】/workspace/log/viz_20260324_104515.log
+[10:45:18] 【圖表位置】/workspace/result/metaphlan4
+[10:45:18] 【複製到家目錄】cp /workspace/result/metaphlan4/*.pdf ~/

@@ -1,0 +1,5 @@
+"path","line","code"
+"appendix/history/1Pipeline230726.sh","249","data=read.table('result/qc/sum.txt', header=T, row.names=1, sep='\t'); summary(data)"
+"appendix/history/1Pipeline230726.sh","251","library(reshape2); data=read.table('result/qc/sum.txt', header=T,row.names=1, sep='\t'); write.table(melt(data), file='result/qc/sum_long.txt',sep='\t', quote=F, col.names=T, row.names=F)"
+"result12/pipeline.sh","234","data=read.table('result12/qc/sum.txt', header=T, row.names=1, sep='\t'); summary(data)"
+"result12/pipeline.sh","236","library(reshape2); data=read.table('result12/qc/sum.txt', header=T,row.names=1, sep='\t'); write.table(melt(data), file='result12/qc/sum_long.txt',sep='\t', quote=F, col.names=T, row.names=F)"

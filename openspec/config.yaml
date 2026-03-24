@@ -1,0 +1,65 @@
+schema: spec-driven
+
+context: |
+	项目：EasyMetagenome
+	定位：面向非生信背景研究者的宏基因组分析流程，兼顾生信分析人员与服务团队。
+	目标：提供从原始测序数据到物种与功能结果的可复现、可维护、可扩展分析流程。
+
+	主要使用者：
+	- 非生信背景研究者
+	- 生信分析人员
+	- 生信服务团队
+
+	技术栈与运行方式：
+	- Bash Shell 为主流程语言
+	- R/Rscript 用于统计与可视化
+	- Conda 用于环境与依赖管理
+	- 当前主要运行于 Linux（Ubuntu 22.04+ / CentOS 7.7+）
+
+	当前核心脚本：
+	- 0Install.sh：软件与数据库安装
+	- 1Pipeline.sh：主分析流程
+	- 2StatPlot.sh：统计与可视化
+	- 3Init.sh：初始化设置
+
+	当前流程特征：
+	- 输入通常包括 seq/*.fq.gz 与 result/metadata.txt
+	- 输出分为中间结果 temp/ 与最终结果 result/
+	- 脚本头部已有版本信息，但后续变更应同时考虑项目版本与流程模式版本
+
+	工程约束：
+	- 新功能与新变更应优先使用 YAML 作为正式配置来源
+	- env 变量只保留给覆写、密钥与兼容过渡场景
+	- 变更设计需兼顾已有脚本用户的迁移成本与向后兼容性
+	- 输出应逐步走向明确的 I/O 契约，而不是仅依赖隐式目录约定
+
+	版本治理约定：
+	- project version：用于管理整个 EasyMetagenome 项目发布版本
+	- pipeline schema version：用于管理流程配置、阶段接口与输入输出契约版本
+	- module interface version：暂不强制，但允许作为后续扩展
+
+rules:
+	proposal:
+		- 先说明目标使用者、要解决的问题，以及受影响的分析阶段或模块。
+		- 明确说明本变更影响的是 project version、pipeline schema version，或两者皆影响。
+		- 如涉及兼容性变化，必须单列“兼容性影响”与“迁移路径”。
+		- 优先从产品价值描述，再补充实现约束，不要只写技术改造。
+
+	design:
+		- 新设计默认以 YAML 作为正式配置来源；env 仅用于覆写、密钥和兼容过渡。
+		- 设计中应明确区分固定契约与可扩展部分，尤其是 metadata、模块输出和状态语义。
+		- 若设计影响执行阶段切换、partial rerun 或模块拆分，必须说明状态流转与失败处理策略。
+		- 若设计改变现有脚本边界，必须说明旧入口如何映射到新模块结构。
+
+	spec:
+		- 对输入输出使用明确契约描述，避免仅以示例代替规则。
+		- metadata 采用“固定必需栏位 + 任意扩充栏位”的模型来描述。
+		- 输出需区分“必需输出 / 模组输出 / 衍生输出”。
+		- 任务状态至少使用 success、warning、failed、skipped 四种语义。
+		- 涉及 schema 的需求必须标明对应的 pipeline schema version 影响。
+
+	tasks:
+		- 每个任务都必须标注 impact level。
+		- impact level 至少包含 docs、schema、module、compatibility；需要时可扩展 UI、backend 等标签。
+		- 任务应按可验证的最小增量拆分，避免把多阶段流程重构写成单一任务。
+		- 涉及兼容性变更时，单独列出迁移、验证与回归检查任务。

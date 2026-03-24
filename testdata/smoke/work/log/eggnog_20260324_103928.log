@@ -1,0 +1,39 @@
+==========================================
+蛋白質功能註釋流程 (eggNOG-mapper)
+Log 檔案: /workspace/log/eggnog_20260324_103928.log
+==========================================
+[10:39:28] 工作目錄: /workspace/work
+[10:39:28] 資料庫目錄: /workspace/db
+[10:39:28] 線程數: 2
+[10:39:28] USE_CONDA=0，跳過 conda 激活
+
+==========================================
+[10:39:28] 檢查軟體與資料庫
+==========================================
+[10:39:28] ✓ eggNOG-mapper 程式已就緒
+[10:39:28] ✓ eggNOG 資料庫已就緒
+
+==========================================
+[10:39:28] 掃描蛋白質序列
+==========================================
+[10:39:28] 找到: TEST01 (1 條序列)
+
+==========================================
+[10:39:28] eggNOG 註釋: TEST01
+==========================================
+[10:39:28] 執行 emapper.py (可能需要耗費數十分鐘到數小時)...
+#  emapper-2.1.13
+# emapper.py  -i /workspace/result/TEST01_genes.faa --output TEST01 --output_dir /workspace/result/eggnog --data_dir /workspace/db/eggnog -m diamond --cpu 2
+[1;33m  /opt/conda/lib/python3.10/site-packages/eggnogmapper/bin/diamond blastp -d '/workspace/db/eggnog/eggnog_proteins.dmnd' -q '/workspace/result/TEST01_genes.faa' --threads 2 -o '/workspace/result/eggnog/TEST01.emapper.hits' --tmpdir '/workspace/app/easymetagenome/emappertmp_dmdn_kqrwqfbx' --sensitive --iterate -e 0.001 --top 3  --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp scovhsp[0m
+Error running diamond: /bin/sh: 1: /opt/conda/lib/python3.10/site-packages/eggnogmapper/bin/diamond: not found
+[10:39:29] ❌ TEST01 註釋失敗，請查看 log: /workspace/log/eggnog_20260324_103928.log
+
+==========================================
+[10:39:29] ✅ eggNOG-mapper 分析完成！
+==========================================
+[10:39:29] 
+[10:39:29] 【生成的檔案】 /workspace/result/eggnog
+[10:39:29]   *.emapper.annotations  (包含 COG, KEGG, GO 等詳細註釋結果)
+[10:39:29]   *.emapper.hits         (Diamond 原始比對結果)
+[10:39:29] 
+[10:39:29] 【完整 Log】 /workspace/log/eggnog_20260324_103928.log

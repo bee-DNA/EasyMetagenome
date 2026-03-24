@@ -1,0 +1,78 @@
+==========================================
+可視化分析 (easymetagenome)
+Log 檔案: /workspace/log/viz_20260324_065449.log
+==========================================
+[06:54:49] 工作目錄: /workspace/work
+[06:54:49] 結果目錄: /workspace/result
+[06:54:49] USE_CONDA=0 或 conda 缺失，使用當前 Python
+
+==========================================
+[06:54:49] 檢查必要檔案
+==========================================
+[06:54:49] ✓ taxonomy.tsv 已找到
+[06:54:49] 檢查 Python 套件...
+[06:54:50] ✓ Python 套件已就緒
+
+==========================================
+[06:54:50] 檢查 metadata.txt
+==========================================
+[06:54:50] ✓ metadata.txt 已存在
+[06:54:50] 內容:
+#SampleID	Group
+TEST01	Group1
+
+==========================================
+[06:54:50] 執行可視化分析
+==========================================
+  讀取 taxonomy.tsv...
+  ✓ 樣本數: 1  (TEST01)
+  ✓ 門:0  屬:0  種:1
+
+  計算 Alpha 多樣性...
+  ✓ alpha.txt
+SampleID  Group  richness  shannon  simpson
+  TEST01 Group1         1      0.0      0.0
+  ✓ boxplot_richness.pdf
+  ✓ boxplot_shannon.pdf
+  ✓ boxplot_simpson.pdf
+
+  Beta 多樣性 PCoA...
+  ⚠ 樣本數 < 2，跳過 PCoA
+
+  繪製熱圖...
+  ⚠ Phylum 無數據，跳過
+  ⚠ Genus 無數據，跳過
+  ✓ heatmap_Species.pdf
+
+  繪製堆疊條形圖...
+  ⚠ Phylum 無數據，跳過
+  ⚠ Genus 無數據，跳過
+  ✓ stacked_Species.pdf
+
+============================================================
+✅ 可視化分析完成！
+============================================================
+  📊 boxplot_richness.pdf (13 KB)
+  📊 boxplot_shannon.pdf (12 KB)
+  📊 boxplot_simpson.pdf (13 KB)
+  📊 heatmap_Species.pdf (19 KB)
+  📊 stacked_Species.pdf (18 KB)
+
+Alpha 多樣性摘要：
+SampleID  Group  richness  shannon  simpson
+  TEST01 Group1         1      0.0      0.0
+[06:54:54] ✓ Python 可視化腳本執行完成
+
+==========================================
+[06:54:54] ✅ 可視化分析完成！
+==========================================
+[06:54:54] 產生 PDF 檔案: 5 個
+[06:54:54]   📊 boxplot_richness.pdf
+[06:54:54]   📊 boxplot_shannon.pdf
+[06:54:54]   📊 boxplot_simpson.pdf
+[06:54:54]   📊 heatmap_Species.pdf
+[06:54:54]   📊 stacked_Species.pdf
+[06:54:54] 
+[06:54:54] 【完整 Log】/workspace/log/viz_20260324_065449.log
+[06:54:54] 【圖表位置】/workspace/result/metaphlan4
+[06:54:54] 【複製到家目錄】cp /workspace/result/metaphlan4/*.pdf ~/

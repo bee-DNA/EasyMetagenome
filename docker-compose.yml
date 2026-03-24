@@ -1,0 +1,109 @@
+name: easymetagenome
+
+x-common-env: &common-env
+  PATH: /opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+  WORK_DIR: /workspace/work
+  SEQ_DIR: /workspace/seq
+  RESULT_DIR: /workspace/result
+  TEMP_DIR: /workspace/temp
+  LOG_DIR: /workspace/log
+  DB_DIR: /workspace/db
+  THREADS: ${THREADS:-16}
+  USE_CONDA: "0"
+  AUTO_METADATA: ${AUTO_METADATA:-0}
+
+x-common-volumes: &common-volumes
+  - ./:/workspace/app
+  - ${WORK_DIR}:/workspace/work
+  - ${SEQ_DIR}:/workspace/seq
+  - ${RESULT_DIR}:/workspace/result
+  - ${TEMP_DIR}:/workspace/temp
+  - ${LOG_DIR}:/workspace/log
+  - ${DB_DIR}:/workspace/db
+
+services:
+  main:
+    build:
+      context: .
+      dockerfile: docker/base.Dockerfile
+    image: easymetagenome/base:local
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome && bash ./1_main_analysis.sh"
+    restart: "no"
+
+  checkm2:
+    build:
+      context: .
+      dockerfile: docker/checkm2.Dockerfile
+    image: easymetagenome/checkm2:local
+    depends_on:
+      main:
+        condition: service_completed_successfully
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome && bash ./1.5_checkm2_analysis.sh"
+    restart: "no"
+
+  humann:
+    build:
+      context: .
+      dockerfile: docker/humann.Dockerfile
+    image: easymetagenome/humann:local
+    depends_on:
+      checkm2:
+        condition: service_completed_successfully
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome && bash ./2_humann_analysis.sh"
+    restart: "no"
+
+  lefse:
+    image: easymetagenome/base:local
+    depends_on:
+      humann:
+        condition: service_completed_successfully
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome && bash ./3_lefse_analysis.sh"
+    restart: "no"
+
+  visualization:
+    image: easymetagenome/base:local
+    depends_on:
+      lefse:
+        condition: service_completed_successfully
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome && bash ./4_visualization.sh"
+    restart: "no"
+
+  eggnog:
+    build:
+      context: .
+      dockerfile: docker/eggnog.Dockerfile
+    image: easymetagenome/eggnog:local
+    depends_on:
+      visualization:
+        condition: service_completed_successfully
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome && bash ./5_eggnog_analysis.sh"
+    restart: "no"
+
+  pipeline-runner:
+    image: easymetagenome/base:local
+    depends_on:
+      eggnog:
+        condition: service_completed_successfully
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "echo 'Pipeline completed. Outputs are in mounted host folders.'"
+    restart: "no"

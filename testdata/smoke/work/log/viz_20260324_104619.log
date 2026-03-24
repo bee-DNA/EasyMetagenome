@@ -1,0 +1,85 @@
+==========================================
+可視化分析 (easymetagenome)
+Log 檔案: /workspace/log/viz_20260324_104619.log
+==========================================
+[10:46:19] 工作目錄: /workspace/work
+[10:46:19] 結果目錄: /workspace/result
+[10:46:19] USE_CONDA=0 或 conda 缺失，使用當前 Python
+
+==========================================
+[10:46:19] 檢查必要檔案
+==========================================
+[10:46:19] ✓ taxonomy.tsv 已找到
+[10:46:19] 檢查 Python 套件...
+[10:46:20] ✓ Python 套件已就緒
+
+==========================================
+[10:46:20] 檢查 metadata.txt
+==========================================
+[10:46:20] ✓ metadata.txt 已存在
+[10:46:20] 內容:
+#SampleID	Group
+TEST01	Control
+TEST02	Treatment
+
+==========================================
+[10:46:20] 執行可視化分析
+==========================================
+/opt/conda/lib/python3.10/site-packages/scipy/spatial/distance.py:1248: RuntimeWarning: invalid value encountered in scalar divide
+  return l1_diff.sum() / l1_sum.sum()
+  讀取 taxonomy.tsv...
+  ✓ 樣本數: 2  (TEST01, TEST02)
+  ✓ 門:0  屬:0  種:2
+
+  計算 Alpha 多樣性...
+  ✓ alpha.txt
+SampleID     Group  richness  shannon  simpson
+  TEST01    Group1         1   0.0000    0.000
+  TEST02 Treatment         2   0.6881    0.495
+  ✓ boxplot_richness.pdf
+  ✓ boxplot_shannon.pdf
+  ✓ boxplot_simpson.pdf
+
+  Beta 多樣性 PCoA...
+  ✓ pcoa.bray_curtis.pdf
+
+  繪製熱圖...
+  ⚠ Phylum 無數據，跳過
+  ⚠ Genus 無數據，跳過
+  ✓ heatmap_Species.pdf
+
+  繪製堆疊條形圖...
+  ⚠ Phylum 無數據，跳過
+  ⚠ Genus 無數據，跳過
+  ✓ stacked_Species.pdf
+
+============================================================
+✅ 可視化分析完成！
+============================================================
+  📊 boxplot_richness.pdf (13 KB)
+  📊 boxplot_shannon.pdf (14 KB)
+  📊 boxplot_simpson.pdf (14 KB)
+  📊 heatmap_Species.pdf (22 KB)
+  📊 pcoa.bray_curtis.pdf (13 KB)
+  📊 stacked_Species.pdf (19 KB)
+
+Alpha 多樣性摘要：
+SampleID     Group  richness  shannon  simpson
+  TEST01    Group1         1   0.0000    0.000
+  TEST02 Treatment         2   0.6881    0.495
+[10:46:23] ✓ Python 可視化腳本執行完成
+
+==========================================
+[10:46:23] ✅ 可視化分析完成！
+==========================================
+[10:46:23] 產生 PDF 檔案: 6 個
+[10:46:23]   📊 boxplot_richness.pdf
+[10:46:23]   📊 boxplot_shannon.pdf
+[10:46:23]   📊 boxplot_simpson.pdf
+[10:46:23]   📊 heatmap_Species.pdf
+[10:46:23]   📊 pcoa.bray_curtis.pdf
+[10:46:23]   📊 stacked_Species.pdf
+[10:46:23] 
+[10:46:23] 【完整 Log】/workspace/log/viz_20260324_104619.log
+[10:46:23] 【圖表位置】/workspace/result/metaphlan4
+[10:46:23] 【複製到家目錄】cp /workspace/result/metaphlan4/*.pdf ~/
