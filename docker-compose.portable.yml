@@ -1,0 +1,41 @@
+name: easymetagenome-portable
+
+x-common-env: &common-env
+  PATH: /opt/conda/bin:/usr/local/bin:/usr/bin:/bin
+  WORK_DIR: /workspace/work
+  SEQ_DIR: /workspace/seq
+  RESULT_DIR: /workspace/result
+  TEMP_DIR: /workspace/temp
+  LOG_DIR: /workspace/log
+  DB_DIR: /workspace/db
+  CONDA_BASE: /opt/conda
+  THREADS: ${THREADS:-16}
+  USE_CONDA: "1"
+  AUTO_METADATA: ${AUTO_METADATA:-0}
+
+x-common-volumes: &common-volumes
+  - ./:/workspace/app
+  - ${WORK_DIR}:/workspace/work
+  - ${SEQ_DIR}:/workspace/seq
+  - ${RESULT_DIR}:/workspace/result
+  - ${TEMP_DIR}:/workspace/temp
+  - ${LOG_DIR}:/workspace/log
+  - ${DB_DIR}:/workspace/db
+
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: docker/allinone.Dockerfile
+    image: easymetagenome/allinone:portable
+    environment: *common-env
+    volumes: *common-volumes
+    command: >
+      bash -lc "cd /workspace/app/easymetagenome &&
+      bash ./1_main_analysis.sh &&
+      bash ./1.5_checkm2_analysis.sh &&
+      bash ./2_humann_analysis.sh &&
+      bash ./3_lefse_analysis.sh &&
+      bash ./4_visualization.sh &&
+      bash ./5_eggnog_analysis.sh"
+    restart: "no"

@@ -1,0 +1,54 @@
+==========================================
+差異分析流程 (LEfSe)
+Log 檔案: /workspace/log/lefse_20260422_101731.log
+==========================================
+[10:17:31] 工作目錄: /workspace/work
+[10:17:31] 激活分析環境...
+[10:17:31] ✓ 環境: easymetagenome
+
+==========================================
+[10:17:31] 檢查必要檔案
+==========================================
+[10:17:31] ✓ taxonomy.tsv
+[10:17:31] ✓ metadata.txt
+
+==========================================
+[10:17:31] 檢查分組資訊
+==========================================
+[10:17:31] metadata.txt 內容:
+#SampleID	Group
+TEST01	Control
+TEST02	Treatment
+[10:17:31] 
+[10:17:32] 分組數: 
+
+==========================================
+[10:17:32] LEfSe 差異分析
+==========================================
+[10:17:32] 步驟 1: 準備 LEfSe 輸入檔案...
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ModuleNotFoundError: No module named 'pandas'
+[10:17:32] ❌ LEfSe 輸入檔案生成失敗，跳過 LEfSe
+
+==========================================
+[10:17:32] Venn 圖分析
+==========================================
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ModuleNotFoundError: No module named 'pandas'
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ModuleNotFoundError: No module named 'pandas'
+[10:17:32] ⚠ 統計檢驗部分失敗（可能分組不足），查看 log
+
+==========================================
+[10:17:32] ✅ 差異分析完成！
+==========================================
+[10:17:32] 【生成的檔案】result/differential/
+[10:17:32] 
+[10:17:32] 
+[10:17:32] 【完整 Log】/workspace/log/lefse_20260422_101731.log
+[10:17:32] 
+[10:17:32] 【下一步】
+[10:17:32]   可視化: ./4_visualization.sh

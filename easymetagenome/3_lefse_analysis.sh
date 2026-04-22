@@ -24,13 +24,13 @@ LOG_DIR="${LOG_DIR:-$WORK_DIR/log}"
 LOG_FILE="${LOG_DIR}/lefse_$(date +%Y%m%d_%H%M%S).log"
 
 CONDA_BASE="${CONDA_BASE:-$HOME/miniconda3}"
+if [ ! -f "${CONDA_BASE}/etc/profile.d/conda.sh" ] && [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+    CONDA_BASE="/opt/conda"
+fi
 DB_DIR="${DB_DIR:-$HOME/db}"
 THREADS="${THREADS:-16}"
 USE_CONDA="${USE_CONDA:-auto}"
-PYTHON_BIN="${PYTHON_BIN:-python3}"
-if [ -x "/opt/conda/bin/python3" ]; then
-    PYTHON_BIN="/opt/conda/bin/python3"
-fi
+PYTHON_BIN="${PYTHON_BIN:-}"
 
 # ==========================================
 # Log 函數
@@ -85,6 +85,29 @@ else
     log "USE_CONDA=0 或 conda 缺失，使用當前 PATH 內工具"
 fi
 
+# 解析 Python：優先使用目前已啟用環境中的 python3
+if [ -n "$PYTHON_BIN" ]; then
+    if [ ! -x "$PYTHON_BIN" ] && ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+        log_err "指定的 PYTHON_BIN 不可用: $PYTHON_BIN"
+        exit 1
+    fi
+    if command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+        PYTHON_BIN="$(command -v "$PYTHON_BIN")"
+    fi
+else
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_BIN="$(command -v python3)"
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_BIN="$(command -v python)"
+    else
+        log_err "找不到可用 Python（python3/python）"
+        exit 1
+    fi
+fi
+
+PYTHON_VER="$("$PYTHON_BIN" -V 2>&1 || true)"
+log "使用 Python: $PYTHON_BIN (${PYTHON_VER:-unknown})"
+
 # 檢查必要檔案
 log_step "檢查必要檔案"
 
@@ -114,7 +137,37 @@ log "metadata.txt 內容:"
 cat "$RESULT_DIR/metadata.txt" | tee -a "$LOG_FILE"
 log ""
 
-GROUP_COUNT=$(tail -n +2 "$RESULT_DIR/metadata.txt" | cut -f2 | sort -u | wc -l)
+if ! GROUP_COUNT=$("$PYTHON_BIN" - "$RESULT_DIR/metadata.txt" <<'PYCOUNT'
+import sys
+import pandas as pd
+
+meta = pd.read_csv(
+    sys.argv[1],
+    sep='\t',
+    comment='#',
+    header=None,
+    names=['SampleID', 'Group'],
+    usecols=[0, 1],
+    dtype=str,
+)
+meta = meta.dropna(subset=['SampleID', 'Group'])
+meta['SampleID'] = meta['SampleID'].str.strip()
+meta['Group'] = meta['Group'].str.strip()
+meta = meta[(meta['SampleID'] != '') & (meta['Group'] != '')]
+meta = meta[~meta['SampleID'].isin(['SampleID', '#SampleID'])]
+meta = meta[meta['Group'] != 'Group']
+print(meta['Group'].nunique())
+PYCOUNT
+); then
+    log_err "分組解析失敗，請檢查 Python 依賴（需 pandas）"
+    exit 1
+fi
+
+GROUP_COUNT="$(echo "$GROUP_COUNT" | tr -d '[:space:]')"
+if ! [[ "$GROUP_COUNT" =~ ^[0-9]+$ ]]; then
+    log_err "無法解析分組數: $GROUP_COUNT"
+    exit 1
+fi
 log "分組數: $GROUP_COUNT"
 
 SINGLE_GROUP=0
@@ -123,7 +176,7 @@ if [ "$GROUP_COUNT" -lt 2 ]; then
     log_warn "請編輯 $RESULT_DIR/metadata.txt 設定分組"
     log ""
     log "範例格式："
-    log "  #SampleID  Group"
+    log "  SampleID  Group"
     log "  SRR001     Control"
     log "  SRR002     Treatment"
     log ""
@@ -139,9 +192,24 @@ log_step "LEfSe 差異分析"
 
 cd "$DIFF_DIR"
 
+pick_cmd() {
+    for candidate in "$@"; do
+        if command -v "$candidate" &>/dev/null; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+LEFSE_FORMAT_CMD="$(pick_cmd lefse-format_input.py lefse_format_input.py || true)"
+LEFSE_RUN_CMD="$(pick_cmd run_lefse.py lefse_run.py || true)"
+LEFSE_PLOT_RES_CMD="$(pick_cmd lefse_plot_res.py || true)"
+LEFSE_PLOT_CLADOGRAM_CMD="$(pick_cmd lefse_plot_cladogram.py || true)"
+
 if [ "$SINGLE_GROUP" -eq 1 ]; then
     log_warn "單一分組，跳過 LEfSe"
-elif ! command -v lefse-format_input.py &>/dev/null; then
+elif [ -z "$LEFSE_FORMAT_CMD" ] || [ -z "$LEFSE_RUN_CMD" ]; then
     log_warn "LEfSe 未安裝，跳過"
 else
     log "步驟 1: 準備 LEfSe 輸入檔案..."
@@ -159,8 +227,25 @@ out_path  = sys.argv[3]
 df = pd.read_csv(taxa_path, sep='\t', index_col=0, comment='#')
 df.columns = [c.replace('_taxa', '') for c in df.columns]
 
-meta = pd.read_csv(meta_path, sep='\t', comment='#', header=0, names=['SampleID', 'Group'])
+meta = pd.read_csv(
+    meta_path,
+    sep='\t',
+    comment='#',
+    header=None,
+    names=['SampleID', 'Group'],
+    usecols=[0, 1],
+    dtype=str,
+)
+meta = meta.dropna(subset=['SampleID', 'Group'])
+meta['SampleID'] = meta['SampleID'].str.strip()
+meta['Group'] = meta['Group'].str.strip()
+meta = meta[(meta['SampleID'] != '') & (meta['Group'] != '')]
+meta = meta[~meta['SampleID'].isin(['SampleID', '#SampleID'])]
+meta = meta[meta['Group'] != 'Group']
 meta = meta[meta['SampleID'].isin(df.columns)]
+
+if meta.empty:
+    raise SystemExit("metadata 與 taxonomy 不匹配，找不到可用樣本。")
 
 # 排列樣本順序與 metadata 一致
 samples = meta['SampleID'].tolist()
@@ -185,7 +270,7 @@ PYPREP
 
     if [ "${goto_skip_lefse:-0}" -eq 0 ]; then
         log "步驟 2: 格式化..."
-        if lefse-format_input.py \
+        if "$LEFSE_FORMAT_CMD" \
             "$DIFF_DIR/lefse_input.txt" \
             "$DIFF_DIR/lefse_formatted.in" \
             -c 1 -u 2 -o 1000000 \
@@ -199,7 +284,7 @@ PYPREP
 
     if [ "${goto_skip_lefse:-0}" -eq 0 ]; then
         log "步驟 3: 執行 LEfSe 分析..."
-        if run_lefse.py \
+        if "$LEFSE_RUN_CMD" \
             "$DIFF_DIR/lefse_formatted.in" \
             "$DIFF_DIR/lefse_results.res" \
             -l 2.0 -y 0 -a 0.05 --nlogs 3 \
@@ -211,13 +296,21 @@ PYPREP
 
         log "步驟 4: 生成圖表..."
         if [ -f "$DIFF_DIR/lefse_results.res" ] && [ -s "$DIFF_DIR/lefse_results.res" ]; then
-            lefse_plot_res.py "$DIFF_DIR/lefse_results.res" "$DIFF_DIR/lefse_barplot.pdf" \
-                --format pdf --dpi 300 --width 10 --height 8 \
-                >>"$LOG_FILE" 2>&1 && log_ok "lefse_barplot.pdf" || log_warn "條形圖生成失敗（可忽略）"
+            if [ -n "$LEFSE_PLOT_RES_CMD" ]; then
+                "$LEFSE_PLOT_RES_CMD" "$DIFF_DIR/lefse_results.res" "$DIFF_DIR/lefse_barplot.pdf" \
+                    --format pdf --dpi 300 --width 10 --height 8 \
+                    >>"$LOG_FILE" 2>&1 && log_ok "lefse_barplot.pdf" || log_warn "條形圖生成失敗（可忽略）"
+            else
+                log_warn "找不到 LEfSe 條形圖命令，略過"
+            fi
 
-            lefse_plot_cladogram.py "$DIFF_DIR/lefse_results.res" "$DIFF_DIR/lefse_cladogram.pdf" \
-                --format pdf --dpi 300 \
-                >>"$LOG_FILE" 2>&1 && log_ok "lefse_cladogram.pdf" || log_warn "分支圖生成失敗（可忽略）"
+            if [ -n "$LEFSE_PLOT_CLADOGRAM_CMD" ]; then
+                "$LEFSE_PLOT_CLADOGRAM_CMD" "$DIFF_DIR/lefse_results.res" "$DIFF_DIR/lefse_cladogram.pdf" \
+                    --format pdf --dpi 300 \
+                    >>"$LOG_FILE" 2>&1 && log_ok "lefse_cladogram.pdf" || log_warn "分支圖生成失敗（可忽略）"
+            else
+                log_warn "找不到 LEfSe 分支圖命令，略過"
+            fi
 
             SIG_COUNT=$(awk '$3!="" && $3>2.0' "$DIFF_DIR/lefse_results.res" | wc -l)
             log "顯著差異特徵 (LDA > 2.0): $SIG_COUNT 個"
@@ -257,8 +350,21 @@ df.columns = [c.replace('_taxa', '') for c in df.columns]
 species = df[df.index.str.contains('s__') & ~df.index.str.contains('t__')]
 species = species[(species > 0).any(axis=1)]
 
-meta = pd.read_csv(f'{result_dir}/metadata.txt', sep='\t', comment='#',
-                   header=0, names=['SampleID', 'Group'])
+meta = pd.read_csv(
+    f'{result_dir}/metadata.txt',
+    sep='\t',
+    comment='#',
+    header=None,
+    names=['SampleID', 'Group'],
+    usecols=[0, 1],
+    dtype=str,
+)
+meta = meta.dropna(subset=['SampleID', 'Group'])
+meta['SampleID'] = meta['SampleID'].str.strip()
+meta['Group'] = meta['Group'].str.strip()
+meta = meta[(meta['SampleID'] != '') & (meta['Group'] != '')]
+meta = meta[~meta['SampleID'].isin(['SampleID', '#SampleID'])]
+meta = meta[meta['Group'] != 'Group']
 samples = list(species.columns)
 
 groups = {}
@@ -331,8 +437,21 @@ df.columns = [c.replace('_taxa', '') for c in df.columns]
 species = df[df.index.str.contains('s__') & ~df.index.str.contains('t__')]
 species = species[(species > 0).any(axis=1)]
 
-meta = pd.read_csv(f'{result_dir}/metadata.txt', sep='\t', comment='#',
-                   header=0, names=['SampleID', 'Group'])
+meta = pd.read_csv(
+    f'{result_dir}/metadata.txt',
+    sep='\t',
+    comment='#',
+    header=None,
+    names=['SampleID', 'Group'],
+    usecols=[0, 1],
+    dtype=str,
+)
+meta = meta.dropna(subset=['SampleID', 'Group'])
+meta['SampleID'] = meta['SampleID'].str.strip()
+meta['Group'] = meta['Group'].str.strip()
+meta = meta[(meta['SampleID'] != '') & (meta['Group'] != '')]
+meta = meta[~meta['SampleID'].isin(['SampleID', '#SampleID'])]
+meta = meta[meta['Group'] != 'Group']
 groups = list(meta['Group'].unique())
 
 if len(groups) < 2:

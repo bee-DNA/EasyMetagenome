@@ -23,14 +23,14 @@ LOG_DIR="${LOG_DIR:-$WORK_DIR/log}"
 LOG_FILE="${LOG_DIR}/viz_$(date +%Y%m%d_%H%M%S).log"
 
 CONDA_BASE="${CONDA_BASE:-$HOME/miniconda3}"
+if [ ! -f "${CONDA_BASE}/etc/profile.d/conda.sh" ] && [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+    CONDA_BASE="/opt/conda"
+fi
 DB_DIR="${DB_DIR:-$HOME/db}"
 THREADS="${THREADS:-16}"
 USE_CONDA="${USE_CONDA:-auto}"
 AUTO_METADATA="${AUTO_METADATA:-0}"
-PYTHON_BIN="${PYTHON_BIN:-python3}"
-if [ -x "/opt/conda/bin/python3" ]; then
-    PYTHON_BIN="/opt/conda/bin/python3"
-fi
+PYTHON_BIN="${PYTHON_BIN:-}"
 
 # ==========================================
 # Log 函數
@@ -84,6 +84,29 @@ else
     log "USE_CONDA=0 或 conda 缺失，使用當前 Python"
 fi
 
+# 解析 Python：優先使用目前已啟用環境中的 python3
+if [ -n "$PYTHON_BIN" ]; then
+    if [ ! -x "$PYTHON_BIN" ] && ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+        log_err "指定的 PYTHON_BIN 不可用: $PYTHON_BIN"
+        exit 1
+    fi
+    if command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+        PYTHON_BIN="$(command -v "$PYTHON_BIN")"
+    fi
+else
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_BIN="$(command -v python3)"
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_BIN="$(command -v python)"
+    else
+        log_err "找不到可用 Python（python3/python）"
+        exit 1
+    fi
+fi
+
+PYTHON_VER="$("$PYTHON_BIN" -V 2>&1 || true)"
+log "使用 Python: $PYTHON_BIN (${PYTHON_VER:-unknown})"
+
 # ==========================================
 # 檢查必要檔案
 # ==========================================
@@ -123,10 +146,10 @@ if [ ! -f "$RESULT_DIR/metadata.txt" ]; then
 import sys, pandas as pd
 metaphlan_dir = sys.argv[1]
 result_dir    = sys.argv[2]
-df = pd.read_csv(f'{metaphlan_dir}/taxonomy.tsv', sep='\t', index_col=0)
+df = pd.read_csv(f'{metaphlan_dir}/taxonomy.tsv', sep='\t', index_col=0, comment='#')
 samples = [c.replace('_taxa', '') for c in df.columns]
 with open(f'{result_dir}/metadata.txt', 'w') as f:
-    f.write('#SampleID\tGroup\n')
+    f.write('SampleID\tGroup\n')
     for i, s in enumerate(samples):
         grp = 'Group1' if i % 2 == 0 else 'Group2'
         f.write(f'{s}\t{grp}\n')
@@ -168,14 +191,28 @@ GROUP_COLORS = ['#e6194b','#4363d8','#3cb44b','#f58231','#911eb4',
                 '#42d4f4','#f032e6','#ffe119','#469990','#800000']
 
 print("  讀取 taxonomy.tsv...")
-df = pd.read_csv('taxonomy.tsv', sep='\t', index_col=0)
+df = pd.read_csv('taxonomy.tsv', sep='\t', index_col=0, comment='#')
 df.columns = [c.replace('_taxa', '') for c in df.columns]
 samples = list(df.columns)
 n = len(samples)
 print(f"  ✓ 樣本數: {n}  ({', '.join(samples)})")
 
 meta_path = os.path.join(RESULT_DIR, 'metadata.txt')
-meta = pd.read_csv(meta_path, sep='\t', comment='#', header=0, names=['SampleID', 'Group'])
+meta = pd.read_csv(
+    meta_path,
+    sep='\t',
+    comment='#',
+    header=None,
+    names=['SampleID', 'Group'],
+    usecols=[0, 1],
+    dtype=str,
+)
+meta = meta.dropna(subset=['SampleID', 'Group'])
+meta['SampleID'] = meta['SampleID'].str.strip()
+meta['Group'] = meta['Group'].str.strip()
+meta = meta[(meta['SampleID'] != '') & (meta['Group'] != '')]
+meta = meta[~meta['SampleID'].isin(['SampleID', '#SampleID'])]
+meta = meta[meta['Group'] != 'Group']
 meta = meta[meta['SampleID'].isin(samples)]
 if len(meta) == 0:
     meta = pd.DataFrame({'SampleID': samples, 'Group': 'Group1'})
@@ -382,6 +419,7 @@ if [ $VIZ_EXIT -eq 0 ]; then
     log_ok "Python 可視化腳本執行完成"
 else
     log_err "Python 可視化腳本失敗（exit code: $VIZ_EXIT），查看 log: $LOG_FILE"
+    exit $VIZ_EXIT
 fi
 
 # ==========================================

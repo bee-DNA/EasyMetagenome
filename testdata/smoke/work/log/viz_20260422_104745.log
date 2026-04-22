@@ -1,0 +1,87 @@
+==========================================
+可視化分析 (easymetagenome)
+Log 檔案: /workspace/log/viz_20260422_104745.log
+==========================================
+[10:47:45] 工作目錄: /workspace/work
+[10:47:45] 結果目錄: /workspace/result
+[10:47:45] 激活分析環境...
+[10:47:45] ✓ 環境: easymetagenome
+[10:47:45] 使用 Python: /opt/conda/envs/easymetagenome/bin/python3 (Python 3.10.20)
+
+==========================================
+[10:47:45] 檢查必要檔案
+==========================================
+[10:47:45] ✓ taxonomy.tsv 已找到
+[10:47:45] 檢查 Python 套件...
+[10:47:46] ✓ Python 套件已就緒
+
+==========================================
+[10:47:46] 檢查 metadata.txt
+==========================================
+[10:47:46] ✓ metadata.txt 已存在
+[10:47:46] 內容:
+#SampleID	Group
+TEST01	Control
+TEST02	Treatment
+
+==========================================
+[10:47:46] 執行可視化分析
+==========================================
+/opt/conda/envs/easymetagenome/lib/python3.10/site-packages/scipy/spatial/distance.py:1248: RuntimeWarning: invalid value encountered in scalar divide
+  return l1_diff.sum() / l1_sum.sum()
+  讀取 taxonomy.tsv...
+  ✓ 樣本數: 2  (TEST01, TEST02)
+  ✓ 門:0  屬:0  種:2
+
+  計算 Alpha 多樣性...
+  ✓ alpha.txt
+SampleID     Group  richness  shannon  simpson
+  TEST01   Control         1   0.0000    0.000
+  TEST02 Treatment         2   0.6881    0.495
+  ✓ boxplot_richness.pdf
+  ✓ boxplot_shannon.pdf
+  ✓ boxplot_simpson.pdf
+
+  Beta 多樣性 PCoA...
+  ✓ pcoa.bray_curtis.pdf
+
+  繪製熱圖...
+  ⚠ Phylum 無數據，跳過
+  ⚠ Genus 無數據，跳過
+  ✓ heatmap_Species.pdf
+
+  繪製堆疊條形圖...
+  ⚠ Phylum 無數據，跳過
+  ⚠ Genus 無數據，跳過
+  ✓ stacked_Species.pdf
+
+============================================================
+✅ 可視化分析完成！
+============================================================
+  📊 boxplot_richness.pdf (15 KB)
+  📊 boxplot_shannon.pdf (16 KB)
+  📊 boxplot_simpson.pdf (16 KB)
+  📊 heatmap_Species.pdf (22 KB)
+  📊 pcoa.bray_curtis.pdf (16 KB)
+  📊 stacked_Species.pdf (19 KB)
+
+Alpha 多樣性摘要：
+SampleID     Group  richness  shannon  simpson
+  TEST01   Control         1   0.0000    0.000
+  TEST02 Treatment         2   0.6881    0.495
+[10:47:48] ✓ Python 可視化腳本執行完成
+
+==========================================
+[10:47:48] ✅ 可視化分析完成！
+==========================================
+[10:47:48] 產生 PDF 檔案: 6 個
+[10:47:48]   📊 boxplot_richness.pdf
+[10:47:48]   📊 boxplot_shannon.pdf
+[10:47:48]   📊 boxplot_simpson.pdf
+[10:47:48]   📊 heatmap_Species.pdf
+[10:47:48]   📊 pcoa.bray_curtis.pdf
+[10:47:48]   📊 stacked_Species.pdf
+[10:47:48] 
+[10:47:48] 【完整 Log】/workspace/log/viz_20260422_104745.log
+[10:47:48] 【圖表位置】/workspace/result/metaphlan4
+[10:47:48] 【複製到家目錄】cp /workspace/result/metaphlan4/*.pdf ~/

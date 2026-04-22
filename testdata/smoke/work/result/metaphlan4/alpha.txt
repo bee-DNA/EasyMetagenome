@@ -1,3 +1,3 @@
 SampleID	Group	richness	shannon	simpson
-TEST01	Group1	1	0.0	0.0
+TEST01	Control	1	0.0	0.0
 TEST02	Treatment	2	0.6881	0.495

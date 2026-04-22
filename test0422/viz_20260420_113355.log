@@ -1,0 +1,59 @@
+==========================================
+可視化分析 (easymetagenome)
+Log 檔案: /workspace/log/viz_20260420_113355.log
+==========================================
+[11:33:55] 工作目錄: /workspace/work
+[11:33:55] 結果目錄: /workspace/result
+[11:33:55] USE_CONDA=0 或 conda 缺失，使用當前 Python
+
+==========================================
+[11:33:55] 檢查必要檔案
+==========================================
+[11:33:55] ✓ taxonomy.tsv 已找到
+[11:33:55] 檢查 Python 套件...
+[11:33:56] ✓ Python 套件已就緒
+
+==========================================
+[11:33:56] 檢查 metadata.txt
+==========================================
+[11:33:56] ✓ metadata.txt 已存在
+[11:33:56] 內容:
+#SampleID	Group
+SRR10810002	Group1
+SRR10810003	Group2
+
+==========================================
+[11:33:56] 執行可視化分析
+==========================================
+  讀取 taxonomy.tsv...
+Traceback (most recent call last):
+  File "<stdin>", line 23, in <module>
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+  File "/opt/conda/lib/python3.10/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 278, in read
+    raise ParserError(
+pandas.errors.ParserError: Could not construct index. Requested to use 1 number of columns, but 4 left to parse.
+[11:33:57] ❌ Python 可視化腳本失敗（exit code: 1），查看 log: /workspace/log/viz_20260420_113355.log
+
+==========================================
+[11:33:57] ✅ 可視化分析完成！
+==========================================
+[11:33:57] 產生 PDF 檔案: 10 個
+[11:33:57]   📊 boxplot_richness.pdf
+[11:33:57]   📊 boxplot_shannon.pdf
+[11:33:57]   📊 boxplot_simpson.pdf
+[11:33:57]   📊 heatmap_Genus.pdf
+[11:33:57]   📊 heatmap_Phylum.pdf
+[11:33:57]   📊 heatmap_Species.pdf
+[11:33:57]   📊 pcoa.bray_curtis.pdf
+[11:33:57]   📊 stacked_Genus.pdf
+[11:33:57]   📊 stacked_Phylum.pdf
+[11:33:57]   📊 stacked_Species.pdf
+[11:33:57] 
+[11:33:57] 【完整 Log】/workspace/log/viz_20260420_113355.log
+[11:33:57] 【圖表位置】/workspace/result/metaphlan4
+[11:33:57] 【複製到家目錄】cp /workspace/result/metaphlan4/*.pdf ~/

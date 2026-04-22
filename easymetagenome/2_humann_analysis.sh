@@ -23,6 +23,9 @@ LOG_DIR="${LOG_DIR:-$WORK_DIR/log}"
 LOG_FILE="${LOG_DIR}/humann_$(date +%Y%m%d_%H%M%S).log"
 
 CONDA_BASE="${CONDA_BASE:-$HOME/miniconda3}"
+if [ ! -f "${CONDA_BASE}/etc/profile.d/conda.sh" ] && [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+    CONDA_BASE="/opt/conda"
+fi
 DB_DIR="${DB_DIR:-$HOME/db}"
 THREADS="${THREADS:-16}"
 USE_CONDA="${USE_CONDA:-auto}"
@@ -89,14 +92,24 @@ fi
 
 # 檢查 HUMAnN 資料庫
 log_step "檢查資料庫"
-if [ ! -d "$DB_DIR/humann4/chocophlan" ]; then
-    log_err "ChocoPhlAn 資料庫缺失: $DB_DIR/humann4/chocophlan"
-    log "請下載資料庫 (~20 GB):"
-    log "  conda activate humann4"
-    log "  humann_databases --download chocophlan full $DB_DIR/humann4"
-    log "  humann_databases --download uniref uniref90_diamond $DB_DIR/humann4"
+if ! command -v humann &>/dev/null; then
+    log_err "humann 未安裝或不在 PATH 中。"
+    log "請先安裝 HUMAnN（或啟用 humann4 環境）後再重試。"
     exit 1
 fi
+log_ok "HUMAnN 程式已就緒"
+
+for db_name in chocophlan uniref; do
+    db_path="$DB_DIR/humann4/$db_name"
+    if [ ! -d "$db_path" ] || [ -z "$(ls -A "$db_path" 2>/dev/null)" ]; then
+        log_err "HUMAnN 資料庫缺失或為空: $db_path"
+        log "請下載資料庫（可能需要數十 GB 空間）："
+        log "  conda activate humann4"
+        log "  humann_databases --download chocophlan full $DB_DIR/humann4"
+        log "  humann_databases --download uniref uniref90_diamond $DB_DIR/humann4"
+        exit 1
+    fi
+done
 log_ok "HUMAnN 資料庫已就緒"
 
 # 創建輸出目錄
