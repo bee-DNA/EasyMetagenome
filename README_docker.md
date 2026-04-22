@@ -1,4 +1,4 @@
-# EasyMetagenome Docker 新環境啟動手冊（你已經有 portable tar）
+# EasyMetagenome Docker Ubuntu 專用啟動手冊（你已經有 portable tar）
 
 這份文件是給「你已經有 `easymetagenome_allinone_portable.tar`」的情境。  
 重點只有三件事：
@@ -9,10 +9,12 @@
 
 ---
 
-## 1. 先決條件
+## 1. 適用範圍與先決條件
 
-- 作業系統：Ubuntu 22.04 / 24.04（其他 Linux 也可）
+- 作業系統：Ubuntu 22.04 / 24.04
 - 已安裝 Docker + Docker Compose plugin
+
+本文件只針對 Ubuntu 撰寫，不包含 Windows / macOS 操作方式。
 
 檢查：
 
@@ -239,16 +241,16 @@ bash docker/run-portable.sh run
 ## 9. 常見錯誤對照
 
 1. 看不到樣本  
-原因：`seq` 檔名不是 `*_1` / `*_2` 配對格式。
+   原因：`seq` 檔名不是 `*_1` / `*_2` 配對格式。
 
 2. LEfSe/HUMAnN/eggNOG 被跳過  
-原因：對應 DB 尚未放到 `DB_DIR`。
+   原因：對應 DB 尚未放到 `DB_DIR`。
 
 3. 有跑但沒有結果  
-先看：`$ROOT/work/log/*.log`，再看 `result` 是否有逐步產出。
+   先看：`$ROOT/work/log/*.log`，再看 `result` 是否有逐步產出。
 
 4. 權限問題 `permission denied`  
-修正：
+   修正：
 
 ```bash
 sudo chown -R "$USER:$USER" "$ROOT"
@@ -266,4 +268,4 @@ chmod -R u+rwX "$ROOT"
 
 ---
 
-如果你之後希望，我可以再幫你加一版「Windows 路徑範例（`D:\...`）」的 README 區塊，讓跨平台更直覺。
+以上流程皆以 Ubuntu 終端機指令為準。

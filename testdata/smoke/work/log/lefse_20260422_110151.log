@@ -1,0 +1,76 @@
+==========================================
+差異分析流程 (LEfSe)
+Log 檔案: /workspace/log/lefse_20260422_110151.log
+==========================================
+[11:01:51] 工作目錄: /workspace/work
+[11:01:51] 激活分析環境...
+[11:01:51] ✓ 環境: easymetagenome
+[11:01:51] 使用 Python: /opt/conda/envs/easymetagenome/bin/python3 (Python 3.10.20)
+
+==========================================
+[11:01:51] 檢查必要檔案
+==========================================
+[11:01:51] ✓ taxonomy.tsv
+[11:01:51] ✓ metadata.txt
+
+==========================================
+[11:01:52] 檢查分組資訊
+==========================================
+[11:01:52] metadata.txt 內容:
+#SampleID	Group
+TEST01	Control
+TEST02	Treatment
+[11:01:52] 
+[11:01:52] 分組數: 2
+
+==========================================
+[11:01:52] LEfSe 差異分析
+==========================================
+[11:01:52] 步驟 1: 準備 LEfSe 輸入檔案...
+✓ lefse_input.txt 寫入完成 (2 特徵, 2 樣本)
+[11:01:53] ✓ lefse_input.txt
+[11:01:53] 步驟 2: 格式化...
+[11:01:54] ✓ lefse_formatted.in
+[11:01:54] 步驟 3: 執行 LEfSe 分析...
+Number of significantly discriminative features: 0 ( 0 ) before internal wilcoxon
+No features with significant differences between the two classes
+Number of discriminative features with abs LDA score > 2.0 : 0
+[11:01:55] ✓ lefse_results.res
+[11:01:55] 步驟 4: 生成圖表...
+No differentially abundant features found in /workspace/result/differential/lefse_results.res
+[11:01:57] ✓ lefse_barplot.pdf
+clade_sep parameter too large, lowered to 0.06335270404815674
+[11:01:58] ✓ lefse_cladogram.pdf
+[11:01:58] 顯著差異特徵 (LDA > 2.0): 0 個
+
+==========================================
+[11:01:58] Venn 圖分析
+==========================================
+樣本數: 2, 分組: ['Control', 'Treatment']
+  Control: 1 個物種
+  Treatment: 2 個物種
+✓ venn_species.pdf
+✓ venn_summary.txt
+比較 Control vs Treatment
+  Control: 1 個樣本
+  Treatment: 1 個樣本
+⚠ 每組需至少 2 個樣本才能進行檢驗
+[11:02:00] ✓ 統計檢驗完成
+
+==========================================
+[11:02:00] ✅ 差異分析完成！
+==========================================
+[11:02:00] 【生成的檔案】result/differential/
+[11:02:00]   lefse_results.res
+[11:02:00]   lefse_barplot.pdf
+[11:02:00]   lefse_cladogram.pdf
+[11:02:00]   venn_species.pdf
+[11:02:00]   lefse_input.txt
+[11:02:00]   venn_summary.txt
+[11:02:00] 
+[11:02:00] LEfSe 顯著特徵: 0
+[11:02:00] 
+[11:02:00] 【完整 Log】/workspace/log/lefse_20260422_110151.log
+[11:02:00] 
+[11:02:00] 【下一步】
+[11:02:00]   可視化: ./4_visualization.sh

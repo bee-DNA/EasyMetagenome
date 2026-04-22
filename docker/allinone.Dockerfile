@@ -2,7 +2,7 @@ FROM mambaorg/micromamba:1.5.8
 
 USER root
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+        && apt-get install -y --no-install-recommends \
         bash \
         coreutils \
         findutils \
@@ -14,7 +14,7 @@ RUN apt-get update \
         ca-certificates \
         tar \
         gzip \
-    && rm -rf /var/lib/apt/lists/*
+        && rm -rf /var/lib/apt/lists/*
 
 USER $MAMBA_USER
 ENV MAMBA_DOCKERFILE_ACTIVATE=1
@@ -38,7 +38,7 @@ RUN micromamba create -y -n easymetagenome -c conda-forge -c bioconda \
         matplotlib \
         scikit-learn \
         pip \
-    && micromamba run -n easymetagenome pip install --no-cache-dir matplotlib-venn
+        && micromamba run -n easymetagenome pip install --no-cache-dir matplotlib-venn
 
 RUN micromamba create -y -n humann4 -c conda-forge -c bioconda \
         python=3.12 \
